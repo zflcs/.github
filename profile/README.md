@@ -1,4 +1,4 @@
-## Kernel crates that can be used in mutiple OS in Rust
+## Kernel crates that can be used in mutiple Rust OSes
 
 <!--
 

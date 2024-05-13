@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import {Table, TableHeader, TableColumn, TableBody, TableRow, TableCell, Spinner, getKeyValue, Chip, Button} from "@nextui-org/react";
-import {Input} from "@nextui-org/react";
+import {Input, Link} from "@nextui-org/react";
 import data from "../data.json";
 import { fromDate, getLocalTimeZone } from "@internationalized/date";
 
@@ -50,6 +50,7 @@ export default function IndexPage() {
 			<TableHeader>
 				<TableColumn>name</TableColumn>
 				<TableColumn maxWidth={"40%"}>description</TableColumn>
+				<TableColumn>docs</TableColumn>
 				<TableColumn>authors</TableColumn>
 				<TableColumn>keywords</TableColumn>
 				<TableColumn>repo</TableColumn>
@@ -66,8 +67,15 @@ export default function IndexPage() {
 						console.log(getKeyValue(item, columnKey));
 						return <TableCell>{getKeyValue(item, columnKey)}</TableCell>
 					}} */}
-					<TableCell>{item['name']}</TableCell>
+					<TableCell><Link color="primary" href={"https://github.com/" + item['repo']}>{item['name']}</Link></TableCell>
 					<TableCell>{item['description']}</TableCell>
+					<TableCell>
+						{
+							item['doc_url']!= undefined?
+							<Link color="primary" href={item['doc_url']}>Document</Link>:
+							<a>not available</a>
+						}
+					</TableCell>
 					<TableCell>{item['authors'].map(({name, email}) => {
 						return <> {name};{email} <br /></>
 					})}</TableCell>

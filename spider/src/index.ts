@@ -1,7 +1,7 @@
 import { Octokit } from "octokit";
 import dotenv from "dotenv";
-import { writeFileSync } from "fs";
-import { writeFile } from "fs/promises";
+import { readFileSync, writeFileSync } from "fs";
+import { readFile, writeFile } from "fs/promises";
 
 dotenv.config();
 
@@ -14,6 +14,7 @@ interface OsModuleConfig {
   description: string;
   version: string;
   keywords: string[];
+  doc_url: string;
   author: {
     name: string;
     email: string;
@@ -42,7 +43,7 @@ async function main() {
   let orgs = await octokit.rest.repos.listForOrg({
     org: "kern-crates",
   });
-  console.log(orgs);
+  // console.log(orgs);
 
   let modules: Array<PerRepoInfo> = new Array();
 
@@ -69,10 +70,37 @@ async function main() {
       });
     }
   }));
+  let content = await readFile("./external_repos.txt");
+  for(let line of content.toString("utf8").split("\n")) {
+    if(line.indexOf("/") == -1) continue; 
+    let [owner, name] = line.split("/");
+    let repo = await octokit.rest.repos.get({
+      owner: owner,
+      repo: name,
+    });
+    let content = await octokit.rest.repos.getContent({
+      owner: owner,
+      repo: name,
+      path: "README.json",
+    }).then(result => (result.data as any)['content']).catch(() => null);
+    // Insert config into map if file content is not null.
+    if (content != null) {
+      console.log(`insert into ${line}`)
+      modules.push({
+        content: Buffer.from(content, "base64").toString('utf-8'),
+        repo: line,
+        create_at: repo.data.created_at,
+        update_at: repo.data.updated_at,
+        url: `https://github.com/${line}`
+      });
+    }
+  }  
   let module_configs = modules.map(perRepo => {
     let module_config = JSON.parse(perRepo.content) as OsModuleConfig;
     module_config.url = perRepo.url;
-    module_config.repo = perRepo.repo;
+    if(module_config.repo == undefined || module_config.repo == null) {
+      module_config.repo = perRepo.repo;
+    }
     module_config.created_at = perRepo.create_at;
     module_config.updated_at = perRepo.update_at;
     return module_config;

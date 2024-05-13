@@ -1,6 +1,6 @@
 ## Kernel crates that can be used in multiple Rust OSes
 
-[模块发布需求](./module_requirement.md)
+[模块发布需求](/profile/module_requirement.md)
 
 [模块列表](https://kern-crates.github.io/.github/)
 

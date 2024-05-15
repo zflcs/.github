@@ -26,6 +26,14 @@ import { fromDate, getLocalTimeZone } from "@internationalized/date";
 }
 */
 
+function CheckNotAvailable({children, item}: any) {
+	return <>
+		{item?children:<p style={{
+			color: 'red'
+		}}>Not Available</p>}
+	</>
+}
+
 export default function IndexPage() {
 	let [condition, setCondition] = useState("");
   return <>
@@ -58,7 +66,7 @@ export default function IndexPage() {
 				<TableColumn>extra_operation</TableColumn>
 			</TableHeader>
 			<TableBody items={data.filter((item) => {
-				return item.name.match(condition) || item.description.match(condition) || item.keywords.indexOf(condition) >= 0
+				return item.name.match(condition) || item.description?.match(condition) || (item.keywords != undefined && item.keywords.indexOf(condition) >= 0)
 			})}>
 				{(item) => (
 				<TableRow key={item?.name}>
@@ -68,7 +76,9 @@ export default function IndexPage() {
 						return <TableCell>{getKeyValue(item, columnKey)}</TableCell>
 					}} */}
 					<TableCell><Link color="primary" href={"https://github.com/" + item['repo']}>{item['name']}</Link></TableCell>
-					<TableCell>{item['description']}</TableCell>
+					<TableCell><CheckNotAvailable item={item['description']}>
+					{item['description']}
+					</CheckNotAvailable></TableCell>
 					<TableCell>
 						{
 							item['doc_url']!= undefined?
@@ -76,14 +86,18 @@ export default function IndexPage() {
 							<a>not available</a>
 						}
 					</TableCell>
-					<TableCell>{item['authors'].map(({name, email}) => {
+					<TableCell><CheckNotAvailable item={item['authors']}>
+					{item['authors']?.map(({name, email}) => {
 						return <> {name};{email} <br /></>
-					})}</TableCell>
-					<TableCell>{item['keywords'].map((value) => {
+					})}
+					</CheckNotAvailable></TableCell>
+					<TableCell><CheckNotAvailable item={item['keywords']}>
+					{item['keywords']?.map((value) => {
 						return <><Chip style={{
 							cursor: "pointer"
 						}} onClick={() => setCondition(value)}>{value}</Chip>&nbsp;</>;
-					})}</TableCell>
+					})}
+					</CheckNotAvailable></TableCell>
 					<TableCell>{item['repo']}</TableCell>
 					<TableCell>{(new Date(item['updated_at'])).toLocaleString()}</TableCell>
 					<TableCell>

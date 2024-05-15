@@ -1,0 +1,3 @@
+kern-crates/.github
+kern-crates/docs
+kern-crates/testing

@@ -11,15 +11,15 @@ const octokit = new Octokit({
 
 interface OsModuleConfig {
   name: string;
-  description: string;
-  version: string;
-  keywords: string[];
-  doc_url: string;
+  description: string | undefined;
+  version: string | undefined;
+  keywords: string[] | undefined;
+  doc_url: string | undefined;
   author: {
     name: string;
     email: string;
     url: string | undefined;
-  }[];
+  }[] | undefined;
   // repo url
   url: string;
   created_at: string | null | undefined;
@@ -31,7 +31,7 @@ interface PerRepoInfo {
   repo: string;
   create_at: string | null | undefined;
   update_at: string | null | undefined;
-  content: string;
+  content: string | undefined;
   url: string;
 }
 
@@ -47,8 +47,9 @@ async function main() {
 
   let modules: Array<PerRepoInfo> = new Array();
 
+  let exclude_list = (await readFile('./exclude_repos.txt')).toString("utf8").split("\n");
   // Get all files content
-  await Promise.all(orgs.data.map(async ({ 
+  await Promise.all(orgs.data.filter((v) => !exclude_list.includes(v.full_name)).map(async ({ 
     name, full_name, owner, created_at, updated_at,
     html_url
   }) => {
@@ -63,6 +64,14 @@ async function main() {
       console.log(`insert into ${full_name}`)
       modules.push({
         content: Buffer.from(content, "base64").toString('utf-8'),
+        repo: full_name,
+        create_at: created_at,
+        update_at: updated_at,
+        url: html_url
+      });
+    } else {
+      modules.push({
+        content: undefined,
         repo: full_name,
         create_at: created_at,
         update_at: updated_at,
@@ -96,7 +105,23 @@ async function main() {
     }
   }  
   let module_configs = modules.map(perRepo => {
-    let module_config = JSON.parse(perRepo.content) as OsModuleConfig;
+    let module_config = null;
+    if(perRepo.content != undefined) {
+      module_config = JSON.parse(perRepo.content) as OsModuleConfig;
+    } else {
+      module_config = {
+        name: perRepo.repo.split('/').pop(),
+        description: undefined,
+        version: undefined,
+        keywords: undefined,
+        doc_url: undefined,
+        author: undefined,
+        url: perRepo.url,
+        created_at: perRepo.create_at,
+        updated_at: perRepo.update_at,
+        repo: perRepo.repo,
+      };
+    }
     module_config.url = perRepo.url;
     if(module_config.repo == undefined || module_config.repo == null) {
       module_config.repo = perRepo.repo;

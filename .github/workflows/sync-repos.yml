@@ -2,8 +2,6 @@
 
 name: Github Sync Repositories
 
-permissions: write-all
-
 on:
   schedule:
     - cron: '0 */1 * * *'
@@ -11,13 +9,14 @@ on:
     branches:
       - main
   workflow_dispatch:
+
 jobs:
   build:
-    name: Deploying
+    name: Mirroring
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
       - name: Testing Run
-        run: gh repo sync kern-crates/ByteOS -b main
+        run: python sync.py
         env:
           GH_TOKEN: ${{ secrets.GH_CLI_TOKEN }}

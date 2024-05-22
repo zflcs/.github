@@ -87,9 +87,11 @@ export default function IndexPage() {
 						}
 					</TableCell>
 					<TableCell><CheckNotAvailable item={item['authors']}>
-					{item['authors']?.map(({name, email}) => {
-						return <> {name};{email} <br /></>
-					})}
+					{
+					item['authors']?.map((author) => {
+						return  <> {typeof(author) === "string" ?author:(author['name'] + author['email'])} <br /></>
+					})
+					}
 					</CheckNotAvailable></TableCell>
 					<TableCell><CheckNotAvailable item={item['keywords']}>
 					{item['keywords']?.map((value) => {

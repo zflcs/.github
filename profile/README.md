@@ -4,6 +4,8 @@
 
 [模块列表](https://kern-crates.github.io/.github/)
 
+[同步列表](/profile/sync_list_CN.md)
+
 <!--
 
 **Here are some ideas to get you started:**

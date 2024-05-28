@@ -5,3 +5,4 @@ shilei-massclouds/arch_boot
 shilei-massclouds/early_console
 shilei-massclouds/axdtb
 AsyncModules/embassy-priority
+Starry-OS/linux_syscall_api

@@ -136,24 +136,33 @@ async function getExternals(externListFilePath: string) {
  * @param orgName orgnazition name
  */
 async function getOrg(orgName: string) {
-  let orgs = await octokit.rest.repos.listForOrg({
-    org: orgName,
-  });
-  // set excludes for organization repositories
-  let exclude_list = (await readFile("./exclude_repos.txt")).toString("utf8")
-    .split("\n");
-  // Get all files content
-  await Promise.all(
-    orgs.data.filter((v) => !exclude_list.includes(v.full_name)).map(async ({
-      name,
-      owner,
-      created_at,
-      updated_at,
-      html_url,
-    }) => {
-      await getRepoInfo(owner.login, name, html_url, created_at, updated_at);
-    }),
-  );
+  const per_page = 50;
+  for(let page = 1;;page++) {
+    let orgs = await octokit.rest.repos.listForOrg({
+      org: orgName,
+      per_page,
+      page
+    });
+    // Return if there don't have any repositories needed to be handled.
+    if(orgs.data.length == 0) {
+      return;
+    }
+    // set excludes for organization repositories
+    let exclude_list = (await readFile("./exclude_repos.txt")).toString("utf8")
+      .split("\n");
+    // Get all files content
+    await Promise.all(
+      orgs.data.filter((v) => !exclude_list.includes(v.full_name)).map(async ({
+        name,
+        owner,
+        created_at,
+        updated_at,
+        html_url,
+      }) => {
+        await getRepoInfo(owner.login, name, html_url, created_at, updated_at);
+      }),
+    );
+  }
 }
 
 /**
@@ -162,6 +171,7 @@ async function getOrg(orgName: string) {
  */
 function handleResult(): OsModuleConfig[] {
   return modules.map((perRepo) => {
+    console.log(`handle repo: ${perRepo['repo']}`);
     // Set default values
     let module_config = {
       name: perRepo.repo.split("/").pop(),
@@ -176,28 +186,30 @@ function handleResult(): OsModuleConfig[] {
       repo: perRepo.repo,
     } as OsModuleConfig;
 
-    if(perRepo.file_fmt == "json") {
-      // If file is json
-      module_config = JSON.parse(perRepo.content!) as OsModuleConfig;
-    } else if(perRepo.file_fmt == "toml") {
-      // If file is toml
-      let toml = load(perRepo.content!) as any;
-      if(toml['package'] != null && toml['package'] != undefined) {
-        let tomlConfig = toml['package'] as CargoTomlConfigPackage;
-        module_config = {
-          name: tomlConfig.name ?? perRepo.repo.split("/").pop(),
-          description: tomlConfig.description,
-          version: tomlConfig.version,
-          keywords: tomlConfig.keywords,
-          doc_url: undefined,
-          authors: tomlConfig.authors,
-          url: perRepo.url,
-          created_at: perRepo.create_at,
-          updated_at: perRepo.update_at,
-          repo: perRepo.repo,
-        } as OsModuleConfig
+    try {
+      if(perRepo.file_fmt == "json") {
+        // If file is json
+        module_config = JSON.parse(perRepo.content!) as OsModuleConfig;
+      } else if(perRepo.file_fmt == "toml") {
+        // If file is toml
+        let toml = load(perRepo.content!) as any;
+        if(toml['package'] != null && toml['package'] != undefined) {
+          let tomlConfig = toml['package'] as CargoTomlConfigPackage;
+          module_config = {
+            name: tomlConfig.name ?? perRepo.repo.split("/").pop(),
+            description: tomlConfig.description,
+            version: tomlConfig.version,
+            keywords: tomlConfig.keywords,
+            doc_url: undefined,
+            authors: tomlConfig.authors,
+            url: perRepo.url,
+            created_at: perRepo.create_at,
+            updated_at: perRepo.update_at,
+            repo: perRepo.repo,
+          } as OsModuleConfig
+        }
       }
-    }
+    } catch(e) {}
 
     module_config.url = perRepo.url;
     if (module_config.repo == undefined || module_config.repo == null) {

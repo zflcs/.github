@@ -1,8 +1,9 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {Table, TableHeader, TableColumn, TableBody, TableRow, TableCell, Spinner, getKeyValue, Chip, Button} from "@nextui-org/react";
 import {Input, Link} from "@nextui-org/react";
 import data from "../data.json";
 import { fromDate, getLocalTimeZone } from "@internationalized/date";
+import { useAsyncList } from "@react-stately/data";
 
 /* data example
 {
@@ -35,7 +36,44 @@ function CheckNotAvailable({children, item}: any) {
 }
 
 export default function IndexPage() {
-	let [condition, setCondition] = useState("");
+  let [condition, setCondition] = useState("");
+  let list = useAsyncList({
+	async load() {
+		return {
+			items: data.filter((item) => {
+  				let keys = condition.trim().split(" ").filter(v => v.trim().length > 0);
+				console.log(keys);
+				return keys.filter((v) => {
+					return item.name.match(v) || item.description?.match(v) || (item.keywords != undefined && item.keywords.indexOf(v) >= 0)
+				}).length == keys.length;
+				// return item.name.match(condition) || item.description?.match(condition) || (item.keywords != undefined && item.keywords.indexOf(condition) >= 0)
+			}),
+		};
+	},
+	async sort({items, sortDescriptor}) {
+		return {
+			items: items.sort((a, b) => {
+				if(sortDescriptor.column == undefined) {
+					return 0;
+				}
+				let first = (a as any)[sortDescriptor.column];
+				let second = (b as any)[sortDescriptor.column];
+				let cmp = first < second ? -1 : 1;
+				
+				if (sortDescriptor.direction === "descending") {
+					cmp *= -1;
+				}
+	
+			  	return cmp;
+			}),
+		  };
+	}
+  });
+
+  useEffect(() => {
+	list.reload();
+  }, [condition])
+
   return <>
 	<div style={{
 		width: '90%',
@@ -54,9 +92,14 @@ export default function IndexPage() {
 				onInput={(e) => setCondition(e.currentTarget.value)} 
 			/>
 		</div>
-		<Table aria-label="Example static collection table" width={"100%"}>
+		<Table 
+			aria-label="Example static collection table" 
+			width={"100%"}
+			sortDescriptor={list.sortDescriptor}
+			onSortChange={list.sort}
+		>
 			<TableHeader>
-				<TableColumn>name</TableColumn>
+				<TableColumn key={"name"} allowsSorting>name</TableColumn>
 				<TableColumn maxWidth={"40%"}>description</TableColumn>
 				<TableColumn>docs</TableColumn>
 				<TableColumn>authors</TableColumn>
@@ -65,16 +108,9 @@ export default function IndexPage() {
 				<TableColumn>update_at</TableColumn>
 				<TableColumn>extra_operation</TableColumn>
 			</TableHeader>
-			<TableBody items={data.filter((item) => {
-				return item.name.match(condition) || item.description?.match(condition) || (item.keywords != undefined && item.keywords.indexOf(condition) >= 0)
-			})}>
+			<TableBody items={list.items as typeof data}>
 				{(item) => (
 				<TableRow key={item?.name}>
-					{/* {(columnKey) => {
-						console.log(item)
-						console.log(getKeyValue(item, columnKey));
-						return <TableCell>{getKeyValue(item, columnKey)}</TableCell>
-					}} */}
 					<TableCell><Link color="primary" href={"https://github.com/" + item['repo']}>{item['name']}</Link></TableCell>
 					<TableCell><CheckNotAvailable item={item['description']}>
 					{item['description']}
@@ -86,13 +122,15 @@ export default function IndexPage() {
 							<a>not available</a>
 						}
 					</TableCell>
-					<TableCell><CheckNotAvailable item={item['authors']}>
-					{
-					item['authors']?.map((author) => {
-						return  <> {typeof(author) === "string" ?author:(author['name'] + author['email'])} <br /></>
-					})
-					}
-					</CheckNotAvailable></TableCell>
+					<TableCell>
+						<CheckNotAvailable item={item['authors']}>
+						{
+						item['authors']?.map((author) => {
+							return  <> {typeof(author) === "string" ?author:(author['name'] + author['email'])} <br /></>
+						})
+						}
+						</CheckNotAvailable>
+					</TableCell>
 					<TableCell><CheckNotAvailable item={item['keywords']}>
 					{item['keywords']?.map((value) => {
 						return <><Chip style={{

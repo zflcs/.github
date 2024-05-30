@@ -80,7 +80,8 @@ export default function IndexPage() {
 		margin: 'auto',
 	}}>
 		<div style={{
-			padding: '1em 1em'
+			padding: '1em 1em',
+			paddingBottom: '.5em'
 		}}>
 			<Input 
 				fullWidth={true}
@@ -91,6 +92,12 @@ export default function IndexPage() {
 				value={condition} 
 				onInput={(e) => setCondition(e.currentTarget.value)} 
 			/>
+			<div style={{
+				marginTop: ".5em",
+				color: 'gray'
+			}}>
+				支持多关键字搜索，关键字之间使用空格间隔。
+			</div>
 		</div>
 		<Table 
 			aria-label="Example static collection table" 

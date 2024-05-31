@@ -5,6 +5,8 @@ shilei-massclouds/arch_boot
 shilei-massclouds/early_console
 shilei-massclouds/axdtb
 AsyncModules/embassy-priority
+elliott10/e1000-driver
+elliott10/lwext4_rust
 Starry-OS/axsync
 Starry-OS/axmem
 Starry-OS/axdriver

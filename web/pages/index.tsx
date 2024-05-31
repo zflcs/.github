@@ -41,7 +41,8 @@ export default function IndexPage() {
 	async load() {
 		return {
 			items: data.filter((item) => {
-  				let keys = condition.trim().split(" ").filter(v => v.trim().length > 0);
+				let cond = condition.replaceAll("，", ",");
+  				let keys = cond.trim().split(",").filter(v => v.trim().length > 0).map((v) => v.trim());
 				console.log(keys);
 				return keys.filter((v) => {
 					return item.name.match(v) || item.description?.match(v) || (item.keywords != undefined && item.keywords.indexOf(v) >= 0)
@@ -96,7 +97,7 @@ export default function IndexPage() {
 				marginTop: ".5em",
 				color: 'gray'
 			}}>
-				支持多关键字搜索，关键字之间使用空格间隔。
+				支持多关键字搜索，关键字之间使用逗号间隔，支持全半角符号。
 			</div>
 		</div>
 		<Table 

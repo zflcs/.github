@@ -66,3 +66,4 @@ Starry-OS/linux_syscall_api
 Starry-OS/arceos_posix_api
 Starry-OS/axfeat
 Starry-OS/Starry
+seL4/rust-sel4

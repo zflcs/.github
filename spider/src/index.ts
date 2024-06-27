@@ -25,6 +25,7 @@ interface OsModuleConfig {
   url: string;
   created_at: string | null | undefined;
   updated_at: string | null | undefined;
+  test_repos: string[] | undefined;
   repo: string;
 }
 
@@ -210,7 +211,9 @@ function handleResult(): OsModuleConfig[] {
         }
       }
     } catch(e) {}
-
+    if(module_config.test_repos == undefined) {
+      module_config.test_repos = [];
+    }
     module_config.url = perRepo.url;
     if (module_config.repo == undefined || module_config.repo == null) {
       module_config.repo = perRepo.repo;

@@ -31,7 +31,7 @@ jobs:
         run: |
           cd web && npm install && npm run build
           mv out ../build
-          cp data.json build/
+          cp data.json ../build/
       - name: GitHub Pages
         uses: crazy-max/ghaction-github-pages@v3.0.0
         with:

@@ -11,6 +11,7 @@
     "email": "321353225@qq.com"
   }],
   "keywords": ["hal", "arch", "platform"],
+  "test_repos": [],
   "repo": "Byte-OS/polyhal",
   "doc_url": "https://github.com/Byte-OS/polyhal/wiki"
 }
@@ -22,6 +23,7 @@
 - `description` 字段描述了您的模块介绍;
 - `authors` 中使用一个 `数组` 描述了模块的作者信息;
 - `keywords` 中描述了您的模块类型，您可以自由添加一些关键字
+- `test_repos` 中描述了相关的测试仓库。
 
 下面是一些可选信息：
 
